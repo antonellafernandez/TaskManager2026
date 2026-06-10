@@ -3,10 +3,16 @@ import type {
   Task,
   CreateTaskRequest,
   UpdateTaskRequest,
+  TaskStatus,
 } from "../types/task";
 
-export const getTasks = async (): Promise<Task[]> => {
-  const response = await api.get<Task[]>("/tasks");
+export const getTasks = async (
+  status?: TaskStatus
+): Promise<Task[]> => {
+  const response = await api.get<Task[]>("/tasks", {
+    params: { status },
+  });
+
   return response.data;
 };
 
