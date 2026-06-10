@@ -31,7 +31,7 @@ export default function LoginPage() {
 
       navigate("/tasks");
     } catch (error) {
-      setError("Usuario o contraseña inválidos");
+      setError("Invalid username or password");
       console.error(error);
     } finally {
       setLoading(false);
@@ -42,67 +42,64 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center">
       <div className="w-full max-w-md rounded-lg border p-6 shadow">
         <h1 className="mb-6 text-center text-2xl font-bold">
-          Task Manager
-        </h1>
+  Task Manager
+</h1>
 
-        <form
-          onSubmit={handleLogin}
-          className="space-y-4"
-        >
-          <div>
-            <label
-              htmlFor="username"
-              className="mb-1 block"
-            >
-              Usuario
-            </label>
+<form onSubmit={handleLogin} className="space-y-4">
+  <div>
+    <label
+      htmlFor="username"
+      className="mb-1 block"
+    >
+      Username
+    </label>
 
-            <input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(e) =>
-                setUsername(e.target.value)
-              }
-              className="w-full rounded border px-3 py-2"
-              required
-            />
-          </div>
+    <input
+      id="username"
+      type="text"
+      value={username}
+      onChange={(e) =>
+        setUsername(e.target.value)
+      }
+      className="w-full rounded border px-3 py-2"
+      required
+    />
+  </div>
 
-          <div>
-            <label
-              htmlFor="password"
-              className="mb-1 block"
-            >
-              Contraseña
-            </label>
+  <div>
+    <label
+      htmlFor="password"
+      className="mb-1 block"
+    >
+      Password
+    </label>
 
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) =>
-                setPassword(e.target.value)
-              }
-              className="w-full rounded border px-3 py-2"
-              required
-            />
-          </div>
+    <input
+      id="password"
+      type="password"
+      value={password}
+      onChange={(e) =>
+        setPassword(e.target.value)
+      }
+      className="w-full rounded border px-3 py-2"
+      required
+    />
+  </div>
 
-          {error && (
-            <p className="text-sm text-red-500">
-              {error}
-            </p>
-          )}
+  {error && (
+    <p className="text-sm text-red-500">
+      {error}
+    </p>
+  )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded border px-4 py-2"
-          >
-            {loading ? "Ingresando..." : "Ingresar"}
-          </button>
-        </form>
+  <button
+    type="submit"
+    disabled={loading}
+    className="w-full rounded border px-4 py-2"
+  >
+    {loading ? "Signing in..." : "Sign In"}
+  </button>
+</form>
       </div>
     </div>
   );
