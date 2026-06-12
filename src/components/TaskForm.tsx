@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { CreateTaskRequest, TaskStatus } from "../types/task";
+import type { CreateTaskRequest } from "../types/task";
 import { TASK_STATUS } from "../types/task";
 
 interface Props {
@@ -9,9 +9,6 @@ interface Props {
 export default function TaskForm({ onSubmit }: Props) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [status, setStatus] = useState<TaskStatus>(
-    TASK_STATUS.PENDING
-  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,60 +16,90 @@ export default function TaskForm({ onSubmit }: Props) {
     onSubmit({
       title,
       description,
-      status,
+      status: TASK_STATUS.PENDING,
     });
 
     setTitle("");
     setDescription("");
-    setStatus(TASK_STATUS.PENDING);
   };
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="mb-6 space-y-3 rounded border p-4"
+      className="mb-6 space-y-4 rounded-xl border p-4 text-white bg-slate-900"
     >
-      <input
-        className="w-full border p-2"
-        placeholder="Title"
-        value={title}
-        onChange={(e) =>
-          setTitle(e.target.value)
-        }
-      />
+      <div>
+        <label
+          htmlFor="title"
+          className="mb-1 block text-sm font-medium text-slate-300"
+        >
+          Title
+        </label>
 
-      <input
-        className="w-full border p-2"
-        placeholder="Description"
-        value={description}
-        onChange={(e) =>
-          setDescription(e.target.value)
-        }
-      />
+        <input
+          className="
+          w-full
+          rounded-md
+          border
+          border-slate-300
+          bg-white
+          p-2
+          text-slate-950
+          focus:outline-none
+          focus:ring-2
+          focus:ring-blue-500
+          focus:border-blue-500
+          placeholder:italic
+        "
+          placeholder="Prepare project presentation"
+          required
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+      </div>
 
-      <select
-        value={status}
-        onChange={(e) =>
-          setStatus(
-            e.target.value as TaskStatus
-          )
-        }
-      >
-        <option value={TASK_STATUS.PENDING}>
-          Pending
-        </option>
+      <div>
+        <label
+          htmlFor="description"
+          className="mb-1 block text-sm font-medium text-slate-300"
+        >
+          Description
+        </label>
 
-        <option value={TASK_STATUS.IN_PROGRESS}>
-          In Progress
-        </option>
-
-        <option value={TASK_STATUS.COMPLETED}>
-          Completed
-        </option>
-      </select>
+        <input
+          className="
+          w-full
+          rounded-md
+          border
+          border-slate-300
+          bg-white
+          p-2
+          text-slate-950
+          focus:outline-none
+          focus:ring-2
+          focus:ring-blue-500
+          focus:border-blue-500
+          placeholder:italic
+        "
+          placeholder="Create slides and review requirements before Friday"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+      </div>
 
       <button
-        className="w-full border p-2"
+        className="
+          w-full
+          cursor-pointer
+          rounded-md
+          bg-blue-500
+          px-4
+          py-2
+          text-sm
+          font-medium
+          transition
+          hover:bg-blue-400
+        "
         type="submit"
       >
         Create Task
