@@ -8,7 +8,12 @@ import type {
   TaskFilter,
 } from "../types/task";
 
-import { getTasks, createTask, deleteTask, updateTask } from "../api/taskApi";
+import {
+  getTasks,
+  createTask,
+  deleteTask,
+  updateTask,
+} from "../api/taskApi";
 
 import Navbar from "../components/Navbar";
 import TaskCard from "../components/TaskCard";
@@ -18,38 +23,41 @@ import TaskFilters from "../components/TaskFilters";
 export default function TasksPage() {
   const queryClient = useQueryClient();
 
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-
   const [filter, setFilter] = useState<TaskFilter>("ALL");
 
-  // -------------------------
-  // GET TASKS
-  // -------------------------
+  // =========================
+  // QUERY (GET TASKS)
+  // =========================
   const {
     data: tasks,
     isLoading,
     error,
   } = useQuery({
     queryKey: ["tasks", filter],
-    queryFn: () => getTasks(filter === "ALL" ? undefined : filter),
+    queryFn: () =>
+      getTasks(filter === "ALL" ? undefined : filter),
   });
 
-  // -------------------------
-  // CREATE (optimistic)
-  // -------------------------
+  // =========================
+  // CREATE TASK (optimistic)
+  // =========================
   const createMutation = useMutation({
     mutationFn: createTask,
 
     onMutate: async (newTask: CreateTaskRequest) => {
-      await queryClient.cancelQueries({
-        queryKey: ["tasks", filter],
-      });
+      await queryClient.cancelQueries({ queryKey: ["tasks"] });
 
-      const previousTasks = queryClient.getQueryData<Task[]>(["tasks", filter]);
+      const previousTasks = queryClient.getQueryData<Task[]>([
+        "tasks",
+        filter,
+      ]);
 
       const tempTask: Task = {
         id: Date.now(),
-        ...newTask,
+        title: newTask.title,
+        description: newTask.description,
+        status: newTask.status ?? "pending",
+        dueDate: newTask.dueDate,
       };
 
       queryClient.setQueryData<Task[]>(["tasks", filter], (old) => [
@@ -61,82 +69,96 @@ export default function TasksPage() {
     },
 
     onError: (_err, _newTask, context) => {
-      queryClient.setQueryData(["tasks", filter], context?.previousTasks);
+      queryClient.setQueryData(
+        ["tasks", filter],
+        context?.previousTasks
+      );
     },
 
     onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["tasks", filter],
-      });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
   });
 
-  // -------------------------
-  // DELETE (optimistic)
-  // -------------------------
+  // =========================
+  // DELETE TASK (optimistic)
+  // =========================
   const deleteMutation = useMutation({
     mutationFn: deleteTask,
 
     onMutate: async (taskId: number) => {
-      await queryClient.cancelQueries({
-        queryKey: ["tasks", filter],
-      });
+      await queryClient.cancelQueries({ queryKey: ["tasks"] });
 
-      const previousTasks = queryClient.getQueryData<Task[]>(["tasks", filter]);
+      const previousTasks = queryClient.getQueryData<Task[]>([
+        "tasks",
+        filter,
+      ]);
 
       queryClient.setQueryData<Task[]>(["tasks", filter], (old) =>
-        old?.filter((t) => t.id !== taskId),
+        old?.filter((t) => t.id !== taskId)
       );
 
       return { previousTasks };
     },
 
     onError: (_err, _id, context) => {
-      queryClient.setQueryData(["tasks", filter], context?.previousTasks);
+      queryClient.setQueryData(
+        ["tasks", filter],
+        context?.previousTasks
+      );
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
 
     onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["tasks", filter],
-      });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
   });
 
-  // -------------------------
-  // UPDATE (optimistic)
-  // -------------------------
+  // =========================
+  // UPDATE TASK (optimistic)
+  // =========================
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateTaskRequest }) =>
-      updateTask(id, data),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: number;
+      data: UpdateTaskRequest;
+    }) => updateTask(id, data),
 
     onMutate: async ({ id, data }) => {
-      await queryClient.cancelQueries({
-        queryKey: ["tasks", filter],
-      });
+      await queryClient.cancelQueries({ queryKey: ["tasks"] });
 
-      const previousTasks = queryClient.getQueryData<Task[]>(["tasks", filter]);
+      const previousTasks = queryClient.getQueryData<Task[]>([
+        "tasks",
+        filter,
+      ]);
 
       queryClient.setQueryData<Task[]>(["tasks", filter], (old) =>
-        old?.map((task) => (task.id === id ? { ...task, ...data } : task)),
+        old?.map((task) =>
+          task.id === id ? { ...task, ...data } : task
+        )
       );
 
       return { previousTasks };
     },
 
     onError: (_err, _vars, context) => {
-      queryClient.setQueryData(["tasks", filter], context?.previousTasks);
+      queryClient.setQueryData(
+        ["tasks", filter],
+        context?.previousTasks
+      );
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
 
     onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["tasks", filter],
-      });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
   });
 
-  // -------------------------
-  // LOADING
-  // -------------------------
+  // =========================
+  // UI STATES
+  // =========================
   if (isLoading) {
     return (
       <div className="p-6">
@@ -145,9 +167,6 @@ export default function TasksPage() {
     );
   }
 
-  // -------------------------
-  // ERROR
-  // -------------------------
   if (error) {
     return (
       <div className="p-6">
@@ -160,19 +179,21 @@ export default function TasksPage() {
     <>
       <Navbar />
 
-      <div className="mx-auto max-w-4xl p-6">
+      <div className="min-h-screen mx-auto max-w-4xl p-6 text-slate-950 bg-white">
         <h1 className="mb-6 text-3xl font-bold">Tasks</h1>
 
-        {/* CREATE TASK */}
+        {/* Create task */}
         <TaskForm
-          onSubmit={(task: CreateTaskRequest) => createMutation.mutate(task)}
+          onSubmit={(task: CreateTaskRequest) =>
+            createMutation.mutate(task)
+          }
         />
 
-        {/* FILTERS */}
+        {/* Filters */}
         <TaskFilters status={filter} onChange={setFilter} />
 
-        {/* TASK LIST */}
-        <div className="space-y-4">
+        {/* Task list */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {!tasks?.length ? (
             <p>No tasks found.</p>
           ) : (
@@ -180,46 +201,31 @@ export default function TasksPage() {
               <TaskCard
                 key={task.id}
                 task={task}
-                onSelect={setSelectedTask}
                 onDelete={(id) => deleteMutation.mutate(id)}
+                onStart={(task) =>
+                  updateMutation.mutate({
+                    id: task.id,
+                    data: {
+                      title: task.title,
+                      description: task.description,
+                      status: "in-progress",
+                    },
+                  })
+                }
+                onComplete={(task) =>
+                  updateMutation.mutate({
+                    id: task.id,
+                    data: {
+                      title: task.title,
+                      description: task.description,
+                      status: "completed",
+                    },
+                  })
+                }
               />
             ))
           )}
         </div>
-
-        {/* SELECTED TASK */}
-        {selectedTask && (
-          <div className="mt-8 rounded-lg border p-4">
-            <h2 className="mb-2 text-xl font-semibold">Selected Task</h2>
-
-            <p>
-              <strong>Title:</strong> {selectedTask.title}
-            </p>
-
-            <p>
-              <strong>Description:</strong> {selectedTask.description}
-            </p>
-
-            <p>
-              <strong>Status:</strong> {selectedTask.status}
-            </p>
-
-            {/* QUICK UPDATE EXAMPLE */}
-            <button
-              onClick={() =>
-                updateMutation.mutate({
-                  id: selectedTask.id,
-                  data: {
-                    status: "completed",
-                  },
-                })
-              }
-              className="mt-3 rounded border px-3 py-1"
-            >
-              Mark as completed
-            </button>
-          </div>
-        )}
       </div>
     </>
   );
