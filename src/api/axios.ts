@@ -1,10 +1,11 @@
 import axios from "axios";
-import { getToken } from "../utils/token";
+import { getToken, removeToken } from "../utils/token";
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
 });
 
+// Attach token
 api.interceptors.request.use((config) => {
   const token = getToken();
 
@@ -14,3 +15,16 @@ api.interceptors.request.use((config) => {
 
   return config;
 });
+
+// Handle expired session
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      removeToken();
+      window.location.href = "/login";
+    }
+
+    return Promise.reject(error);
+  }
+);
